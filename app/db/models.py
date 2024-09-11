@@ -82,8 +82,8 @@ class Client(Base):
     async def create(
         developer_id: UUID,
         name: str,
-        redirect_uris: list[str] | None,
-        scopes: list[str] | None,
+        redirect_uris: list[str] | None = None,
+        scopes: list[str] | None = None,
     ) -> tuple["Client", str]:
         secret = secrets.token_urlsafe(32)
         hashed_secret = hash_password(secret)
@@ -153,7 +153,7 @@ class User(Base):
     security_answers: Mapped[list["UserSecurityAnswer"]] = relationship(
         "UserSecurityAnswer", back_populates="user", lazy="selectin"
     )
-    client: Mapped[Client] = relationship("Client", back_populates="users")
+    client: Mapped[Client] = relationship("Client")
     otps: Mapped["OTP"] = relationship("OTP", back_populates="user")
     transactions: Mapped[list["Transaction"]] = relationship(
         "Transaction", back_populates="user"
@@ -183,7 +183,7 @@ class OTP(Base):
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
 
-    user: Mapped[User] = relationship("User", back_populates="otp")
+    user: Mapped[User] = relationship("User", back_populates="otps")
 
     @staticmethod
     async def create(user_id: UUID, otp: str) -> "OTP":

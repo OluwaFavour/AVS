@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -84,3 +85,8 @@ class CardBase(BaseModel):
 class CardCreate(CardBase):
     return_url: HttpUrl
     cancel_url: HttpUrl
+
+
+class SuspicionResponse(BaseModel):
+    is_suspicious: bool
+    suspicious_price: Decimal | None = None

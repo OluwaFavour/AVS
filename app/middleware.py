@@ -1,5 +1,6 @@
 from typing import Callable
 from fastapi import FastAPI, Request, status, HTTPException
+from fastapi.responses import JSONResponse
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -18,30 +19,30 @@ class ClientVerificationMiddleware(BaseHTTPMiddleware):
         # Only process HTTP requests
         if (
             request.scope["type"] == "http"
-            and request.scope["path"] in "/api/v1/end_users"
+            and request.scope["path"].split("/api/v1/end_users")[0] == ""
         ):
             client_id = request.headers.get("Client-Id")
             client_secret = request.headers.get("Authorization")
 
             if not client_secret:
-                raise HTTPException(
+                return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Missing client secret.",
+                    content={"detail": "Missing client secret."},
                 )
 
             async with get_async_session() as session:
                 client = await self.get_client(session, client_id)
 
                 if not client:
-                    raise HTTPException(
+                    return JSONResponse(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Invalid client secret.",
+                        content={"detail": "Invalid client secret."},
                     )
 
                 if not await client.verify_secret(client_secret):
-                    raise HTTPException(
+                    return JSONResponse(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Invalid client secret.",
+                        content={"detail": "Invalid client secret."},
                     )
 
                 # Attach client and developer to request.state for use in views

@@ -1,8 +1,11 @@
+from typing import Annotated
 from uuid import UUID
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from ..db.config import get_async_session
 from ..db.models import Client, Developer
 
 
@@ -21,7 +24,9 @@ async def get_developer_by_email(session: AsyncSession, email: str) -> Developer
 
 
 async def authenticate_developer(
-    session: AsyncSession, email: str, password: str
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    email: str,
+    password: str,
 ) -> Developer | None:
     developer = await get_developer_by_email(session, email)
     if not developer:

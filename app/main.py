@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.middleware.sessions import SessionMiddleware
@@ -66,3 +66,18 @@ app.add_middleware(ClientVerificationMiddleware)
 
 app.include_router(end_users_router)
 app.include_router(developers_router)
+
+
+@app.get("/", include_in_schema=False)
+@app.head("/", include_in_schema=False)
+async def read_root(request: Request):
+    base_url = request.base_url._url.rstrip("/")
+    return {
+        "message": "Welcome to the AVS API",
+        "version": get_settings().app_version,
+        "docs": {
+            "redoc": f"{base_url}/api/redoc",
+            "swagger": f"{base_url}/api/docs",
+            "openapi": f"{base_url}/api/openapi.json",
+        },
+    }

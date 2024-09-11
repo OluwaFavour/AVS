@@ -36,11 +36,18 @@ async def create_developer_route(
     developer_data: Annotated[DeveloperCreateSchema, Body(title="Developer")],
     async_session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> SignUpResponse:
-    developer = await create_developer(async_session, **developer_data.model_dump())
-    client, secret = await create_client(async_session, developer.id, developer.name)
-    return SignUpResponse(
-        developer=developer, client_id=client.id, client_secret=secret
-    )
+    try:
+        developer = await create_developer(async_session, **developer_data.model_dump())
+        client, secret = await create_client(
+            async_session, developer.id, developer.name
+        )
+        return SignUpResponse(
+            developer=developer, client_id=client.id, client_secret=secret
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=DeveloperSchema)
