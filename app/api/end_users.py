@@ -697,7 +697,10 @@ async def capture_transaction_route(
             )
         else:
             # Handle any other AVS codes that may need additional logic
-            return {"status": "info", "message": f"AVS response: {avs_message}."}
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={"status": "info", "message": f"AVS response: {avs_message}."},
+            )
     except httpx.HTTPStatusError as e:
         raise HTTPException(
             status_code=e.response.status_code,
