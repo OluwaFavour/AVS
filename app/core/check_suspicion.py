@@ -1,3 +1,4 @@
+import asyncio
 from decimal import Decimal
 from statistics import mean, median, stdev
 
@@ -72,3 +73,40 @@ async def check_suspicious_activity_in_price(
             break
 
     return suspicious_activity, suspicious_price
+
+
+if __name__ == "__main__":
+    # Sample old transaction prices (in Decimal format) with larger values
+    old_transaction_prices = [
+        Decimal("1500.00"),
+        Decimal("1550.00"),
+        Decimal("1525.00"),
+        Decimal("1540.50"),
+        Decimal("1510.00"),
+        Decimal("1530.00"),
+        Decimal("1495.00"),
+        Decimal("1505.50"),
+        Decimal("1560.00"),
+        Decimal("1570.00"),
+        Decimal("1520.00"),
+        Decimal("1535.00"),
+    ]
+
+    # Sample new transaction prices with larger decimals
+    new_transaction_prices = [
+        Decimal("1580.00"),  # slightly higher but within tolerance
+        Decimal("5000.00"),  # similar to old prices
+        Decimal("1500.00"),  # same as old price
+        Decimal("1600.00"),  # outside tolerance
+        Decimal("1595.00"),  # much higher, suspicious
+    ]
+
+    # Check for suspicious activity with a 20% tolerance factor
+    suspicious_activity_detected = asyncio.run(
+        check_suspicious_activity_in_price(
+            new_transaction_prices,
+            old_transaction_prices,
+            tolerance_factor=Decimal("1.2"),
+        )
+    )
+    print(f"Suspicious activity detected: {suspicious_activity_detected}")
