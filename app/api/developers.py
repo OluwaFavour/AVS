@@ -59,7 +59,7 @@ async def login_route(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
-    request.session["developer_id"] = developer.id
+    request.session["developer_id"] = str(developer.id)
     return developer
 
 

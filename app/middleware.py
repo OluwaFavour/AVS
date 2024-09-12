@@ -30,24 +30,24 @@ class ClientVerificationMiddleware(BaseHTTPMiddleware):
                     content={"detail": "Missing client secret."},
                 )
 
-            async with get_async_session() as session:
-                client = await self.get_client(session, client_id)
+            session = get_async_session()
+            client = await self.get_client(session, client_id)
 
-                if not client:
-                    return JSONResponse(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        content={"detail": "Invalid client secret."},
-                    )
+            if not client:
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Invalid client secret."},
+                )
 
-                if not await client.verify_secret(client_secret):
-                    return JSONResponse(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        content={"detail": "Invalid client secret."},
-                    )
+            if not await client.verify_secret(client_secret):
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Invalid client secret."},
+                )
 
-                # Attach client and developer to request.state for use in views
-                request.state.client = client
-                request.state.developer = client.developer
+            # Attach client and developer to request.state for use in views
+            request.state.client = client
+            request.state.developer = client.developer
 
         response = await call_next(request)
         return response

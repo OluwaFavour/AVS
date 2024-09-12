@@ -1,3 +1,4 @@
+from uuid import UUID
 import aiosmtplib
 from typing import Annotated
 
@@ -81,4 +82,4 @@ async def get_developer(
     developer_id = request.session.get("developer_id")
     if not developer_id:
         return None
-    return await get_developer_by_id(async_session, developer_id)
+    return await get_developer_by_id(async_session, UUID(developer_id))
