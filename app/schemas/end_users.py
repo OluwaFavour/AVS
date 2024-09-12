@@ -90,3 +90,10 @@ class CardCreate(CardBase):
 class SuspicionResponse(BaseModel):
     is_suspicious: bool
     suspicious_price: Decimal | None = None
+
+
+class SuspicionInput(BaseModel):
+    transaction_amount: float
+    transaction_history: list[float]
+    current_address: str
+    history_of_addresses: list[str]

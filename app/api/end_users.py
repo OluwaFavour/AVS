@@ -12,6 +12,7 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.check_suspicion import check_suspicious_activity_in_price
+from ..core.endpoint import process_new_data, predict
 from ..core.messages import send_email
 from ..core.paypal import AVS_CODE_MAP, PayPalClient
 from ..core.utils import generate_otp
@@ -51,6 +52,7 @@ from ..schemas.end_users import (
     UserSecurityAnswerCreate as UserSecurityAnswerCreateSchema,
     UserSecurityAnswer as UserSecurityAnswerSchema,
     SuspicionResponse,
+    SuspicionInput,
 )
 
 
@@ -152,31 +154,46 @@ async def get_security_questions_route(
 @router.get(
     "/check_suspicious_acitivity_in_transaction",
     status_code=status.HTTP_200_OK,
-    response_model=SuspicionResponse,
 )
 async def check_suspicious_acitivity_in_transaction_route(
-    old_transaction_prices: Annotated[
-        list[Decimal],
-        Body(
-            title="Old Transaction Prices",
-            description="The old transaction prices.",
-        ),
-    ],
-    new_transaction_prices: Annotated[
-        list[Decimal],
-        Body(
-            title="New Transaction Prices",
-            description="The new transaction prices.",
-        ),
-    ],
-) -> SuspicionResponse:
+    input_data: Annotated[SuspicionInput, Body(title="Suspicion Input")],
+):
     """
     Check for suspicious activity in the transaction prices.
     """
-    suspicion, suspicious_price = check_suspicious_activity_in_price(
-        old_transaction_prices, new_transaction_prices
-    )
-    return SuspicionResponse(is_suspicious=suspicion, suspicious_price=suspicious_price)
+    processed_data = process_new_data(**input_data.model_dump())
+    prediction = predict(processed_data)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=prediction)
+
+
+# @router.get(
+#     "/check_suspicious_acitivity_in_transaction",
+#     status_code=status.HTTP_200_OK,
+#     response_model=SuspicionResponse,
+# )
+# async def check_suspicious_acitivity_in_transaction_route(
+#     old_transaction_prices: Annotated[
+#         list[Decimal],
+#         Body(
+#             title="Old Transaction Prices",
+#             description="The old transaction prices.",
+#         ),
+#     ],
+#     new_transaction_prices: Annotated[
+#         list[Decimal],
+#         Body(
+#             title="New Transaction Prices",
+#             description="The new transaction prices.",
+#         ),
+#     ],
+# ) -> SuspicionResponse:
+#     """
+#     Check for suspicious activity in the transaction prices.
+#     """
+#     suspicion, suspicious_price = check_suspicious_activity_in_price(
+#         old_transaction_prices, new_transaction_prices
+#     )
+#     return SuspicionResponse(is_suspicious=suspicion, suspicious_price=suspicious_price)
 
 
 @router.delete("/{id}/delete_security_question", status_code=status.HTTP_204_NO_CONTENT)
