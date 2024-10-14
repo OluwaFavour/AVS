@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum
 from typing import Annotated
 from uuid import UUID
 
@@ -93,7 +94,25 @@ class SuspicionResponse(BaseModel):
 
 
 class SuspicionInput(BaseModel):
-    transaction_amount: float
-    transaction_history: list[float]
-    current_address: str
-    history_of_addresses: list[str]
+
+    class PaymentMethod(str, Enum):
+        bank_transfer = "bank_transfer"
+        cash_on_delivery = "cash_on_delivery"
+        debit_card = "debit_card"
+        mobile_money = "mobile_money"
+        paypal = "paypal"
+
+    class DeviceType(str, Enum):
+        desktop = "desktop"
+        mobile = "mobile"
+        tablet = "tablet"
+
+    total_amount: float
+    order_frequency: Annotated[
+        int, Field(gt=0, description="Number of orders in the last 24 hours")
+    ]
+    history_of_addresses: Annotated[
+        list[str], Field(description="List of addresses used in the past by the user")
+    ]
+    payment_method: Annotated[PaymentMethod, Field(description="Payment method used")]
+    device_type: Annotated[DeviceType, Field(description="Device type used")]

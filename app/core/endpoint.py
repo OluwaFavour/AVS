@@ -86,10 +86,10 @@ if __name__ == "__main__":
     # print(fit_label_encoder)
     # Example new data
     new_data = {
-        "Transaction Amount": 3000,
-        "Transaction History": [1000, 2000, 2500, 4000],
-        "Current Address": "123 Main St, Springfield",
-        "History of Addresses": [
+        "transaction_amount": 50000,
+        "transaction_history": [1000, 2000, 2500, 4000],
+        "current_address": "123 Main St, Springfield",
+        "history_of_addresses": [
             "123 Main St, Springfield",
             "456 Elm St, Rivertown",
             "789 Oak St, Hillview",

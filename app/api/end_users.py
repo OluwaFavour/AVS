@@ -1,4 +1,5 @@
 from decimal import Decimal
+import datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -12,7 +13,9 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.check_suspicion import check_suspicious_activity_in_price
-from ..core.endpoint import process_new_data, predict
+
+# from ..core.endpoint import process_new_data, predict
+from Fraud_detection_api.app import predict
 from ..core.messages import send_email
 from ..core.paypal import AVS_CODE_MAP, PayPalClient
 from ..core.utils import generate_otp
@@ -161,9 +164,16 @@ async def check_suspicious_acitivity_in_transaction_route(
     """
     Check for suspicious activity in the transaction prices.
     """
-    processed_data = process_new_data(**input_data.model_dump())
-    prediction = predict(processed_data)
-    return JSONResponse(status_code=status.HTTP_200_OK, content=prediction)
+    raw_data = input_data.model_dump()
+    if datetime.datetime.now().hour < 6 or datetime.datetime.now().hour > 22:
+        raw_data["unusual_time"] = 1
+    else:
+        raw_data["unusual_time"] = 0
+    prediction = predict(raw_data)
+    response = True if prediction == 1 else False
+    return JSONResponse(
+        status_code=status.HTTP_200_OK, content={"is_suspicious": response}
+    )
 
 
 # @router.get(
